@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600&family=Inter:wght@400;500;600&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --word-blue: #2b579a;
+            --word-blue-hover: #1e3f73;
+            --ribbon-bg: #f3f3f3;
+            --ribbon-border: #d4d4d4;
+            --app-bg: #e3e3e3;
+            --page-bg: #ffffff;
+            --text-color: #333333;
+            --active-tab: #ffffff;
+            --hover-bg: #e1e1e1;
+            --selected-btn: #c9c9c9;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--app-bg);
+            color: var(--text-color);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* --- TITLE BAR --- */
+        .titlebar {
+            background-color: var(--word-blue);
+            color: white;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            font-size: 12px;
+        }
+
+        .titlebar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .titlebar-left i {
+            font-size: 14px;
+        }
+
+        .doc-title {
+            font-weight: 600;
+        }
+
+        .titlebar-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .window-controls {
+            display: flex;
+            height: 32px;
+        }
+
+        .window-controls div {
+            width: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .window-controls div:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .window-controls div.close:hover {
+            background-color: #e81123;
+        }
+
+        /* --- RIBBON TABS --- */
+        .ribbon-tabs {
+            background-color: var(--word-blue);
+            display: flex;
+            padding-left: 8px;
+            height: 28px;
+        }
+
+        .tab {
+            color: rgba(255, 255, 255, 0.85);
+            padding: 0 14px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            border-top-left-radius: 3px;
+            border-top-right-radius: 3px;
+            transition: background 0.1s;
+        }
+
+        .tab:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .tab.active {
+            background-color: var(--ribbon-bg);
+            color: var(--word-blue);
+            font-weight: 600;
+        }
+
+        /* --- RIBBON TOOLBAR CONTAINER --- */
+        .ribbon {
+            background-color: var(--ribbon-bg);
+            border-bottom: 1px solid var(--ribbon-border);
+            height: 90px;
+            padding: 6px 12px;
+            display: flex;
+            gap: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            user-select: none;
+        }
+
+        .ribbon-group {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-right: 1px solid #d4d4d4;
+            padding-right: 10px;
+            margin-right: 4px;
+            height: 100%;
+        }
+
+        .ribbon-group:last-child {
+            border-right: none;
+        }
+
+        .ribbon-group-bottom {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            flex: 1;
+            padding-bottom: 4px;
+        }
+
+        .ribbon-group-label {
+            font-size: 10px;
+            color: #666;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-top: auto;
+        }
+
+        /* Ribbon Controls */
+        button.r-btn, label.r-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: #333;
+            padding: 4px 6px;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 12px;
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            min-width: 28px;
+            height: 28px;
+            transition: background 0.1s, border-color 0.1s;
+        }
+
+        button.r-btn:hover, label.r-btn:hover {
+            background-color: var(--hover-bg);
+            border-color: #adadad;
+        }
+
+        button.r-btn.active {
+            background-color: var(--selected-btn);
+            border-color: #888;
+        }
+
+        .r-btn-row {
+            display: flex;
+            gap: 2px;
+        }
+
+        select.r-select {
+            background: white;
+            border: 1px solid #adadad;
+            border-radius: 2px;
+            padding: 3px 6px;
+            font-size: 12px;
+            height: 26px;
+            color: #333;
+            outline: none;
+        }
+
+        select.r-select:hover {
+            border-color: var(--word-blue);
+        }
+
+        /* --- WORKSPACE & PAGES --- */
+        .workspace {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* Page Layout (A4 proportions) */
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            background-color: var(--page-bg);
+            color: var(--text-color);
+            padding: 25mm;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border: 1px solid #dcdcdc;
+        }
+
+        .page-header {
+            font-size: 11px;
+            color: #888;
+            border-bottom: 1px solid #eaeaea;
+            padding-bottom: 6px;
+            margin-bottom: 15px;
+            outline: none;
+        }
+
+        .page-body {
+            flex: 1;
+            outline: none;
+            font-size: 14px;
+            line-height: 1.6;
+            word-break: break-word;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .page-footer {
+            font-size: 11px;
+            color: #888;
+            border-top: 1px solid #eaeaea;
+            padding-top: 6px;
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .page-body img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 10px auto;
+        }
+
+        .page-body h1 { font-size: 24px; margin-bottom: 12px; color: #111; }
+        .page-body h2 { font-size: 20px; margin-bottom: 10px; color: #222; }
+        .page-body p { margin-bottom: 10px; }
+
+        /* --- STATUS BAR --- */
+        .statusbar {
+            background-color: var(--word-blue);
+            color: white;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            font-size: 11px;
+        }
+
+        .statusbar-left, .statusbar-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .statusbar span:hover {
+            background-color: rgba(255,255,255,0.15);
+            padding: 2px 6px;
+            cursor: pointer;
+        }
+
+        @media print {
+            body { background: none; overflow: visible; }
+            .titlebar, .ribbon-tabs, .ribbon, .statusbar { display: none; }
+            .workspace { padding: 0; overflow: visible; }
+            .page { box-shadow: none; margin: 0; border: none; page-break-after: always; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Title Bar -->
+    <div class="titlebar">
+        <div class="titlebar-left">
+            <i class="fa-solid fa-file-word" style="color: white;"></i>
+            <span class="doc-title">Document1 - Word</span>
+        </div>
+        <div class="titlebar-right">
+            <div class="window-controls">
+                <div><i class="fa-solid fa-minus" style="font-size: 10px;"></i></div>
+                <div><i class="fa-regular fa-square" style="font-size: 9px;"></i></div>
+                <div class="close"><i class="fa-solid fa-xmark" style="font-size: 12px;"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ribbon Tabs -->
+    <div class="ribbon-tabs">
+        <div class="tab" style="font-weight: 600; background: transparent; color: white;">File</div>
+        <div class="tab active">Home</div>
+        <div class="tab">Insert</div>
+        <div class="tab">Design</div>
+        <div class="tab">Layout</div>
+        <div class="tab">References</div>
+        <div class="tab">Review</div>
+        <div class="tab">View</div>
+    </div>
+
+    <!-- Ribbon Toolbar -->
+    <div class="ribbon">
+        <!-- Clipboard Group -->
+        <div class="ribbon-group">
+            <div class="ribbon-group-bottom">
+                <button class="r-btn" onclick="formatDoc('paste')" title="Paste" style="height: 52px; width: 40px;"><i class="fa-solid fa-clipboard" style="font-size: 18px;"></i><span style="font-size: 10px;">Paste</span></button>
+                <div style="display: flex; flex-direction: column; gap: 2px;">
+                    <button class="r-btn" onclick="formatDoc('cut')" title="Cut" style="height: 24px; min-width: 50px; justify-content: flex-start; flex-direction: row;"><i class="fa-solid fa-scissors"></i> Cut</button>
+                    <button class="r-btn" onclick="formatDoc('copy')" title="Copy" style="height: 24px; min-width: 50px; justify-content: flex-start; flex-direction: row;"><i class="fa-regular fa-copy"></i> Copy</button>
+                </div>
+            </div>
+            <div class="ribbon-group-label">Clipboard</div>
+        </div>
+
+        <!-- Font Group -->
+        <div class="ribbon-group">
+            <div style="display: flex; flex-direction: column; gap: 3px; padding-bottom: 4px;">
+                <div class="r-btn-row">
+                    <select class="r-select" id="fontFamily" onchange="formatDoc('fontName', this.value)" style="width: 110px;">
+                        <option value="Inter">Segoe UI / Inter</option>
+                        <option value="Merriweather">Merriweather</option>
+                        <option value="JetBrains Mono">JetBrains Mono</option>
+                    </select>
+                    <select class="r-select" id="fontSize" onchange="formatDoc('fontSize', this.value)" style="width: 50px;">
+                        <option value="3">11</option>
+                        <option value="1">8</option>
+                        <option value="2">10</option>
+                        <option value="4">12</option>
+                        <option value="5">14</option>
+                        <option value="6">18</option>
+                        <option value="7">24</option>
+                    </select>
+                </div>
+                <div class="r-btn-row">
+                    <button class="r-btn" onclick="formatDoc('bold')" title="Bold"><i class="fa fa-bold"></i></button>
+                    <button class="r-btn" onclick="formatDoc('italic')" title="Italic"><i class="fa fa-italic"></i></button>
+                    <button class="r-btn" onclick="formatDoc('underline')" title="Underline"><i class="fa fa-underline"></i></button>
+                    <button class="r-btn" onclick="formatDoc('strikeThrough')" title="Strikethrough"><i class="fa fa-strikethrough"></i></button>
+                </div>
+            </div>
+            <div class="ribbon-group-label">Font</div>
+        </div>
+
+        <!-- Paragraph Group -->
+        <div class="ribbon-group">
+            <div style="display: flex; flex-direction: column; gap: 3px; padding-bottom: 4px;">
+                <div class="r-btn-row">
+                    <button class="r-btn" onclick="formatDoc('insertUnorderedList')" title="Bullets"><i class="fa fa-list-ul"></i></button>
+                    <button class="r-btn" onclick="formatDoc('insertOrderedList')" title="Numbering"><i class="fa fa-list-ol"></i></button>
+                </div>
+                <div class="r-btn-row">
+                    <button class="r-btn" onclick="formatDoc('justifyLeft')" title="Align Left"><i class="fa fa-align-left"></i></button>
+                    <button class="r-btn" onclick="formatDoc('justifyCenter')" title="Center"><i class="fa fa-align-center"></i></button>
+                    <button class="r-btn" onclick="formatDoc('justifyRight')" title="Align Right"><i class="fa fa-align-right"></i></button>
+                    <button class="r-btn" onclick="formatDoc('justifyFull')" title="Justify"><i class="fa fa-align-justify"></i></button>
+                </div>
+            </div>
+            <div class="ribbon-group-label">Paragraph</div>
+        </div>
+
+        <!-- Insert & Media Group -->
+        <div class="ribbon-group">
+            <div class="ribbon-group-bottom">
+                <label class="r-btn" title="Insert Picture" style="height: 52px; width: 50px;">
+                    <i class="fa-solid fa-image" style="font-size: 18px; color: #2b579a;"></i>
+                    <span style="font-size: 10px;">Picture</span>
+                    <input type="file" id="imageLoader" accept="image/*" style="display: none;" onchange="insertImage(event)">
+                </label>
+            </div>
+            <div class="ribbon-group-label">Insert</div>
+        </div>
+
+        <!-- Export / Action Group -->
+        <div class="ribbon-group">
+            <div class="ribbon-group-bottom">
+                <button class="r-btn" onclick="window.print()" title="Print to PDF" style="height: 52px; width: 50px; background-color: #f8f9fa;">
+                    <i class="fa-solid fa-print" style="font-size: 18px; color: #2b579a;"></i>
+                    <span style="font-size: 10px;">Print / PDF</span>
+                </button>
+            </div>
+            <div class="ribbon-group-label">File Actions</div>
+        </div>
+    </div>
+
+    <!-- Document Workspace -->
+    <div class="workspace" id="workspace">
+        <div class="page">
+            <div class="page-header" contenteditable="true">Header Area — Draft Copy</div>
+            <div class="page-body" contenteditable="true">
+                <h1>Microsoft Word Style Layout</h1>
+                <p>This layout mirrors the genuine desktop client environment—complete with the distinct blue title bar, tabbed ribbon infrastructure, paragraph alignment matrix, margin setups, and footer structures.</p>
+                <p>Type text anywhere on the canvas, modify the font styling dynamically via the upper ribbon toolbar, or drop in images inline to verify spacing behaviors.</p>
+            </div>
+            <div class="page-footer">
+                <span>Document1</span>
+                <span>Page 1 of 1</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="statusbar">
+        <div class="statusbar-left">
+            <span>Page 1 of 1</span>
+            <span>125 words</span>
+            <span><i class="fa-solid fa-spell-check"></i> English (United States)</span>
+        </div>
+        <div class="statusbar-right">
+            <span><i class="fa-solid fa-book-open"></i> Read Mode</span>
+            <span><i class="fa-solid fa-file-lines"></i> Print Layout</span>
+            <span><i class="fa-solid fa-magnifying-glass"></i> 100%</span>
+        </div>
+    </div>
+
+    <script>
+        function formatDoc(cmd, value = null) {
+            document.execCommand(cmd, false, value);
+        }
+
+        function insertImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.execCommand('insertImage', false, e.target.result);
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+</body>
+</html>
